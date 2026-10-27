@@ -7,16 +7,17 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
-import java.util.Set;
 import java.util.UUID;
 
 /**
- * BTA's ban, op and whitelist lists hold UUIDs. Characters have their own UUIDs, so without this
- * a banned account would slip past its ban, and ops and whitelisted players would lose their status.
- * Every list method below translates a character UUID back to the owning account's UUID first,
- * which keeps all of those lists keyed by real account (what the server owner manages).
+ * BTA's op and whitelist lists hold UUIDs. Characters have their own UUIDs, so without this,
+ * ops would lose their status and a whitelisted player's characters would be turned away.
+ * The methods below translate a character UUID back to the owning account's UUID first, so
+ * ops and the whitelist stay tied to real accounts (what the server owner manages).
+ *
+ * Bans are deliberately NOT translated: they apply to the character's own UUID, so banning a
+ * character punishes that character, not the person behind it.
  */
 @Mixin(PlayerList.class)
 public class PlayerListMixin {
@@ -33,16 +34,9 @@ public class PlayerListMixin {
 
 	/** Each of these methods takes a single UUID argument; swap in the account's UUID before it runs. */
 	@ModifyVariable(
-		method = {"isOp", "isAllowedToLogin", "opPlayer", "deopPlayer", "banPlayer", "pardonPlayer", "addToWhiteList", "removeFromWhiteList"},
+		method = {"isOp", "isAllowedToLogin", "opPlayer", "deopPlayer", "addToWhiteList", "removeFromWhiteList"},
 		at = @At("HEAD"), argsOnly = true, remap = false)
 	private UUID profiles$characterToAccount(UUID id) {
 		return profiles$toAccount(id);
-	}
-
-	/** getPlayerForLogin's first Set.contains call is the ban check (the second is the IP ban check). */
-	@Redirect(method = "getPlayerForLogin",
-		at = @At(value = "INVOKE", target = "Ljava/util/Set;contains(Ljava/lang/Object;)Z", ordinal = 0), remap = false)
-	private boolean profiles$banCheckByAccount(Set<?> bans, Object id) {
-		return bans.contains(id instanceof UUID ? profiles$toAccount((UUID) id) : id);
 	}
 }
