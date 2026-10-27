@@ -1,4 +1,4 @@
-package LARPBeta.profiles;
+package net.larpbeta.profiles;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;

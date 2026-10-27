@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"LARPBeta.profiles.Profiles"
+			"net.larpbeta.profiles.Profiles"
 		]
 	},
 	"mixins": [

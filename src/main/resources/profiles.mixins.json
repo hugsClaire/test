@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "LARPBeta.profiles.mixin",
+  "package": "net.larpbeta.profiles.mixin",
   "compatibilityLevel": "JAVA_${java}",
   "injectors": {
     "defaultRequire": 1

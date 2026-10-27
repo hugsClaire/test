@@ -1,4 +1,4 @@
-package LARPBeta.profiles;
+package net.larpbeta.profiles;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

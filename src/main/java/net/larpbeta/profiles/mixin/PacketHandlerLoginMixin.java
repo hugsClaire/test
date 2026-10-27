@@ -1,7 +1,7 @@
-package LARPBeta.profiles.mixin;
+package net.larpbeta.profiles.mixin;
 
-import LARPBeta.profiles.ProfileRegistry;
-import LARPBeta.profiles.Profiles;
+import net.larpbeta.profiles.ProfileRegistry;
+import net.larpbeta.profiles.Profiles;
 import net.minecraft.core.net.packet.PacketLogin;
 import net.minecraft.server.net.handler.PacketHandlerLogin;
 import org.spongepowered.asm.mixin.Mixin;
