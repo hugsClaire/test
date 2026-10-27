@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ public final class ProfileRegistry {
 	private final Map<UUID, List<Slot>> slotsByAccount = new LinkedHashMap<>();
 	private final Set<String> usedNames = new HashSet<>(); // lower-case
 	private final Set<UUID> usedIds = new HashSet<>();
+	private final Map<UUID, UUID> accountBySlot = new HashMap<>();
 	private final Random random = new Random();
 
 	public ProfileRegistry(Path file, Consumer<String> warn) {
@@ -74,6 +76,7 @@ public final class ProfileRegistry {
 		slotsByAccount.clear();
 		usedNames.clear();
 		usedIds.clear();
+		accountBySlot.clear();
 		if (!Files.exists(file)) {
 			return;
 		}
@@ -100,12 +103,21 @@ public final class ProfileRegistry {
 					warn.accept("slots file line " + lineNumber + " skipped: duplicate name '" + name + "'");
 				} else {
 					usedIds.add(slotId);
+					accountBySlot.put(slotId, account);
 					slotsByAccount.computeIfAbsent(account, k -> new ArrayList<>()).add(new Slot(slotId, name));
 				}
 			} catch (IllegalArgumentException e) {
 				warn.accept("slots file line " + lineNumber + " skipped: bad UUID");
 			}
 		}
+	}
+
+	/**
+	 * The real account that owns a slot, or null if this UUID is not a slot.
+	 * The server's ban, op and whitelist lists hold account UUIDs, so they translate slot UUIDs with this.
+	 */
+	public synchronized UUID accountOf(UUID slotId) {
+		return accountBySlot.get(slotId);
 	}
 
 	/** All slots an account owns, in the order they were created. */
@@ -150,6 +162,7 @@ public final class ProfileRegistry {
 		slots.add(slot);
 		usedNames.add(key);
 		usedIds.add(id);
+		accountBySlot.put(id, account);
 		try {
 			save();
 		} catch (IOException e) {
@@ -159,6 +172,7 @@ public final class ProfileRegistry {
 			}
 			usedNames.remove(key);
 			usedIds.remove(id);
+			accountBySlot.remove(id);
 			throw new UncheckedIOException("Could not save " + file, e);
 		}
 		return slot;
