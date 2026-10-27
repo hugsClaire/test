@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "profiles",
 	"version": "${version}",
-	"name": "Profiles",
-	"description": "Allows you to switch between character profiles.",
+	"name": "BETA LARP",
+	"description": "BETA LARP: players join as anonymous characters, each with their own name, skin and save data.",
 	"authors": [
 		"Claude and Milly"
 	],
@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"LARPBeta.profiles.Profiles"
+			"net.larpbeta.profiles.Profiles"
 		]
 	},
 	"mixins": [

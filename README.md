@@ -1,39 +1,30 @@
-# Example Mod
+# BETA LARP
 
-Template for making Babric mods for BTA!
+A mod for [Better Than Adventure](https://www.betterthanadventure.net/) (BTA) 8.0.1 servers, built on Babric. Nobody plays under their real account name: each player joins as an anonymous character with its own name, UUID and save data, so a roleplay server stays in character.
 
-**Note: *DO NOT fork this repository unless you want to contribute!***
+## What it does today
 
-## Prerequisites
-- JDK for Java 21 ([Eclipse Temurin](https://adoptium.net/temurin/releases/) recommended)
-- [Intellij IDEA](https://www.jetbrains.com/idea/download/) (Scroll down for the free community edition, if using linux **DO NOT** use the flatpak distribution)
-- Minecraft Development plugin (Optional, but highly recommended)
+- Players still log in with their real Minecraft accounts. BTA checks the account itself (keep `online-mode=true` in `server.properties`).
+- Right before the server creates the player, this mod swaps the account's name and UUID for those of the account's character. Everything after that (saved inventory and position, chat, the join message, what other players see) uses the character.
+- A first-time account gets a new character with a generated name like `Stranger1234`.
+- Characters are managed in game with `/character`: `/character list`, `/character new <name>` and `/character switch <name>`. Creating or switching saves your current character and disconnects you; rejoin and you are the new one. Only you see the output.
 
-## Setup instructions
-   
+Planned: a character-slot screen on joining (instead of the commands), and custom skins per character.
 
-1. Click the `Use this template` button on this repo's page above (Will only appear if logged in). Choose `Create a new repository`, you will be redirected to a new page. Enter your repo's name and description, and hit `Create repository`.  
-   To get your project, open IntelliJ IDEA and click `Clone Repository` (`Get from VCS` on older versions). Select `Repository URL` and enter your repo's url
+## Install
 
-2. After the project has finished importing, close it and open it again.  
-   If that does not work, open the right sidebar with `Gradle` on it, open `Tasks` > `fabric` and run `ideaSyncTask`.
+- Put the jar from `build/libs` (the one without `-sources`) in the server's `mods` folder. Clients will need it too once the slot screen exists.
+- Do not install RetroAuth or the OSL mods. They are for vanilla Beta 1.7.3 and stop BTA from starting.
 
-3. Create a new run configuration by going in `Run > Edit Configurations`.  
-   Then click on the plus icon and select Gradle. In the `Tasks and Arguments` field enter `build`.  
-   Running it will build your finished jar files and put them in `build/libs/`.
+## For admins
 
-4. Lastly, open `File` > `Settings` and head to `Build, Execution, Development` > `Build Tools` > `Gradle`.  
-   Make sure `Build and run using` and `Run tests using` is set to `Gradle`.
+- Characters live in `config/profiles/slots.tsv` on the server (account UUID, character UUID, character name). Each character's save file is `players/<character UUID>.dat` in the world folder.
+- **Bans apply to the character**, not the person behind it. The ban check happens at login, so for now a banned character locks its account out until its line is removed from `slots.tsv` (which gives that account a fresh character).
+- **Ops and the whitelist apply to the real account**, so an op is op on every character.
+- The server log shows which account joined as which character, so keep the logs private if the goal is anonymity from other players.
 
-5. Done! Now, all that's left is to change every mention of `examplemod` and `turniplabs` to your own mod id and mod group, respectively. Happy modding!
+## Building
 
-## Tips
+JDK 17 compiles the mod and Gradle itself runs on JDK 21. Run `gradlew build` (`./gradlew build` on Mac or Linux); the jar ends up in `build/libs`.
 
-1. If you haven't already you should join the BTA modding discord! https://discord.gg/FTUNJhswBT
-2. You can set your username when launching the client run configuration by setting `--username <username>` in your program arguments.
-3. When launching the server run configuration you may want to remove the `nogui` program argument in order to see the regular server GUI.
-4. In Intellij you can double press shift or press ctrl+N to search class files, change the search from the default `Project Files` to `All Places` you can easily explore the classes for your dependencies and even BTA itself.
-5. In Intellij if ctrl+left-click on a field or method you can quickly get information on when and where that field or method is assign or used.
-6. Ensure IntelliJ is updated to the latest version. This is important because this template uses the latest Gradle version and if your IntelliJ installation is outdated, it may not support the latest version.
-7. In the `examplemod.mixins.json` you'll see `"compatibilityLevel": "JAVA_${java}",` along with an error message from the `Minecraft Development` plugin stating `Cannot resolve compatibility level 'JAVA_${java}'`. You can safely ignore this. The Gradle build system has been set up to grab the Java version from your `gradle.properties` and replace `${java}` with it. So the compiled binary will properly have it as `JAVA_8`.
-
+Built from the BTA example mod template by Turnip Labs.
