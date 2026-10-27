@@ -120,7 +120,52 @@ public final class ProfileRegistry {
 		return accountBySlot.get(slotId);
 	}
 
-	/** All slots an account owns, in the order they were created. */
+	/** The slot this account joins as: its first one. Null if it has none yet. */
+	public synchronized Slot getActiveSlot(UUID account) {
+		List<Slot> slots = slotsByAccount.get(account);
+		return slots == null || slots.isEmpty() ? null : slots.get(0);
+	}
+
+	/** One of the account's own slots by name (ignoring case), or null. */
+	public synchronized Slot findSlot(UUID account, String name) {
+		List<Slot> slots = slotsByAccount.get(account);
+		if (slots == null || name == null) {
+			return null;
+		}
+		for (Slot slot : slots) {
+			if (slot.name.equalsIgnoreCase(name)) {
+				return slot;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Makes the named slot the one this account joins as next time (it moves to the front of the list).
+	 *
+	 * @throws IllegalArgumentException if the account has no slot with that name
+	 * @throws UncheckedIOException     if the file could not be written (nothing is changed in that case)
+	 */
+	public synchronized Slot setActiveSlot(UUID account, String name) {
+		Slot slot = findSlot(account, name);
+		if (slot == null) {
+			throw new IllegalArgumentException("No slot named " + name);
+		}
+		List<Slot> slots = slotsByAccount.get(account);
+		List<Slot> previousOrder = new ArrayList<>(slots);
+		slots.remove(slot);
+		slots.add(0, slot);
+		try {
+			save();
+		} catch (IOException e) {
+			slots.clear();
+			slots.addAll(previousOrder);
+			throw new UncheckedIOException("Could not save " + file, e);
+		}
+		return slot;
+	}
+
+	/** All slots an account owns: the active one first, the rest in the order they were created. */
 	public synchronized List<Slot> getSlots(UUID account) {
 		List<Slot> slots = slotsByAccount.get(account);
 		return slots == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(slots));

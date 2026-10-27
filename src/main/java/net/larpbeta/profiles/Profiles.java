@@ -1,5 +1,6 @@
 package net.larpbeta.profiles;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
@@ -33,6 +34,11 @@ public class Profiles implements ModInitializer {
 			// Leave the registry null: the login hook refuses logins rather than letting
 			// players in under their real account names.
 			LOGGER.error("Could not read {}; logins will be refused until this is fixed.", file, e);
+		}
+
+		// CharacterCommand uses server-only BTA classes, so only touch it on a dedicated server.
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+			CharacterCommand.register();
 		}
 
 		CommonEvents.BEFORE_GAME_START.listen(Key.of(MOD_ID), this::beforeGameStart);

@@ -7,8 +7,9 @@ A mod for [Better Than Adventure](https://www.betterthanadventure.net/) (BTA) 8.
 - Players still log in with their real Minecraft accounts. BTA checks the account itself (keep `online-mode=true` in `server.properties`).
 - Right before the server creates the player, this mod swaps the account's name and UUID for those of the account's character. Everything after that (saved inventory and position, chat, the join message, what other players see) uses the character.
 - A first-time account gets a new character with a generated name like `Stranger1234`.
+- Characters are managed in game with `/character`: `/character list`, `/character new <name>` and `/character switch <name>`. Creating or switching saves your current character and disconnects you; rejoin and you are the new one. Only you see the output.
 
-Planned: a character-slot screen on joining (several characters per account), and custom skins per character.
+Planned: a character-slot screen on joining (instead of the commands), and custom skins per character.
 
 ## Install
 
