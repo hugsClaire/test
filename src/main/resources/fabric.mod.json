@@ -1,11 +1,11 @@
 {
 	"schemaVersion": 1,
-	"id": "examplemod",
+	"id": "profiles",
 	"version": "${version}",
-	"name": "Example Mod",
-	"description": "This mod aims to help new BTA modders.",
+	"name": "Profiles",
+	"description": "Allows you to switch between character profiles.",
 	"authors": [
-		"Turnip Labs"
+		"Claude and Milly"
 	],
 	"contact": {
 		"homepage": "",
@@ -16,11 +16,11 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"turniplabs.examplemod.ExampleMod"
+			"LARPBeta.profiles.Profiles"
 		]
 	},
 	"mixins": [
-		"examplemod.mixins.json"
+		"profiles.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=${fabricloader}",

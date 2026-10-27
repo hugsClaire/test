@@ -36,8 +36,8 @@ jomlPrimitivess = "1.10.0"
 
 [libraries]
 loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "loader" }
-halplibe = { group = "turniplabs", name = "halplibe", version.ref = "halplibe" }
-modMenu = { group = "turniplabs", name = "modmenu-bta", version.ref = "modMenu" }
+halplibe = { group = "LARPBeta", name = "halplibe", version.ref = "halplibe" }
+modMenu = { group = "LARPBeta", name = "modmenu-bta", version.ref = "modMenu" }
 legacyLwjgl = { group = "com.github.Better-than-Adventure", name = "legacy-lwjgl3", version.ref = "legacyLwjgl" }
 slf4jApi = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4jApi" }
 # https://piston-data.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar
