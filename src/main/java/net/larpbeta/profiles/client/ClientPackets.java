@@ -14,18 +14,20 @@ public final class ClientPackets {
 	}
 
 	public static void handle(PacketHandlerClient handler, String channel, byte[] data) {
+		Profiles.LOGGER.info("BETA LARP: got {} from the server ({} bytes)", channel, data == null ? 0 : data.length);
 		try {
 			if (Protocol.SLOTS.equals(channel)) {
 				onSlots(handler, Protocol.decodeSlots(data));
 			} else if (Protocol.SKIN.equals(channel)) {
 				ClientState.onSkin(Protocol.decodeSkin(data));
 			}
-		} catch (IOException | RuntimeException e) {
+		} catch (IOException | RuntimeException | LinkageError e) {
 			Profiles.LOGGER.warn("Ignoring a bad message on {}", channel, e);
 		}
 	}
 
 	private static void onSlots(PacketHandlerClient handler, Protocol.SlotList list) {
+		Profiles.LOGGER.info("BETA LARP: showing the character picker ({} characters)", list.slots.size());
 		ClientState.onConnection(handler);
 		Minecraft mc = Minecraft.getMinecraft();
 		Screen current = mc.currentScreen;

@@ -101,6 +101,7 @@ public abstract class PacketHandlerLoginMixin {
 			profiles$pending = loginPacket;
 			profiles$account = loginPacket.uuid;
 			profiles$send(service.slotList(profiles$account, "", true));
+			Profiles.LOGGER.info("Sent the character list to {}; waiting for the client's mod to answer.", loginPacket.username);
 			ci.cancel();
 		} catch (Exception e) {
 			// Fail closed: never let someone in under their real account name.
@@ -130,6 +131,7 @@ public abstract class PacketHandlerLoginMixin {
 		}
 		if (Protocol.HELLO.equals(packet.channel)) {
 			profiles$greeted = true;
+			Profiles.LOGGER.info("The BETA LARP mod on {}'s client answered.", profiles$account);
 			return;
 		}
 		try {
