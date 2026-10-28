@@ -14,7 +14,7 @@ import java.util.function.Predicate;
  * What the server does with the client's picker messages. Plain Java (no Minecraft classes) so it can be tested alone.
  *
  * Every request is checked against the real account that is logging in: you can only see, pick, edit
- * or delete your own characters, and a banned character cannot be picked or edited (it can still be deleted).
+ * or delete your own characters, and a banned character cannot be picked or edited and a banned character cannot be deleted either.
  */
 public final class CharacterService {
 	private static final Logger LOGGER = LoggerFactory.getLogger("profiles");
@@ -185,6 +185,9 @@ public final class CharacterService {
 		ProfileRegistry.Slot slot = registry.findSlotById(account, id);
 		if (slot == null) {
 			throw new Rejected("That character no longer exists.");
+		}
+		if (isBanned.test(slot.id)) {
+			throw new Rejected(slot.name + " is banned and cannot be deleted.");
 		}
 		registry.deleteSlot(account, slot.id);
 		skins.delete(slot.id);
