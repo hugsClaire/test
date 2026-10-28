@@ -14,7 +14,7 @@ import java.util.function.Predicate;
  * What the server does with the client's picker messages. Plain Java (no Minecraft classes) so it can be tested alone.
  *
  * Every request is checked against the real account that is logging in: you can only see, pick, edit
- * or delete your own characters, and a banned character cannot be picked, edited or deleted.
+ * or delete your own characters, and a banned character cannot be picked or edited and a banned character cannot be deleted either.
  */
 public final class CharacterService {
 	private static final Logger LOGGER = LoggerFactory.getLogger("profiles");

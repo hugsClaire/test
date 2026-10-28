@@ -167,6 +167,21 @@ public final class ProfileRegistry {
 		return slot;
 	}
 
+	/** Any character on the server by name (ignoring case), whoever owns it, or null. Used so admin commands can name characters. */
+	public synchronized Slot findAnySlotByName(String name) {
+		if (name == null) {
+			return null;
+		}
+		for (List<Slot> slots : slotsByAccount.values()) {
+			for (Slot slot : slots) {
+				if (slot.name.equalsIgnoreCase(name)) {
+					return slot;
+				}
+			}
+		}
+		return null;
+	}
+
 	/** One of the account's own slots by id, or null. */
 	public synchronized Slot findSlotById(UUID account, UUID slotId) {
 		List<Slot> slots = slotsByAccount.get(account);

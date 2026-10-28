@@ -57,11 +57,29 @@ public abstract class PacketHandlerLoginMixin {
 	@Unique
 	private ProfileRegistry.Slot profiles$chosen;
 
-	/** Whether the client has told us it has the mod, and how long we have been waiting to hear. */
+	/**
+	 * BTA's own login timer counts calls to tryLogin, and the server calls that about a thousand times
+	 * a second, so its fixed limit of 30000 is only around 30 to 60 seconds. While a player is at the
+	 * picker we keep it at zero and use real clock time instead.
+	 */
+	@Shadow(remap = false)
+	private int loginTimer;
+
+	/** How long a client may take to answer the character list at all, i.e. to show it has the mod. */
+	@Unique
+	private static final long PROFILES$MOD_ANSWER_NANOS = 20_000_000_000L;
+	/** How long a player may sit in the picker without doing anything. */
+	@Unique
+	private static final long PROFILES$IDLE_NANOS = 30L * 60L * 1_000_000_000L;
+
+	/** Whether the client has told us it has the mod. */
 	@Unique
 	private boolean profiles$greeted;
+	/** When we sent the list, and when the player last did something in the picker (System.nanoTime). */
 	@Unique
-	private int profiles$waitTicks;
+	private long profiles$sentAt;
+	@Unique
+	private long profiles$lastActivity;
 
 	@Unique
 	private CharacterService profiles$service() {
@@ -99,6 +117,8 @@ public abstract class PacketHandlerLoginMixin {
 			}
 			CharacterService service = profiles$service();
 			profiles$pending = loginPacket;
+			profiles$sentAt = System.nanoTime();
+			profiles$lastActivity = profiles$sentAt;
 			profiles$account = loginPacket.uuid;
 			profiles$send(service.slotList(profiles$account, "", true));
 			Profiles.LOGGER.info("Sent the character list to {}; waiting for the client's mod to answer.", loginPacket.username);
@@ -111,12 +131,23 @@ public abstract class PacketHandlerLoginMixin {
 		}
 	}
 
-	/** A client without the mod never answers; do not leave it hanging on "Logging in..." for half an hour. */
+	/**
+	 * Runs every time BTA checks this connection. While the login is held, keeps BTA's own (much too short)
+	 * login timer from firing, and enforces real-time limits instead.
+	 */
 	@Inject(method = "tryLogin", at = @At("HEAD"), remap = false)
-	private void profiles$waitForMod(CallbackInfo ci) {
-		if (profiles$pending != null && !profiles$greeted && ++profiles$waitTicks > 400) {
+	private void profiles$holdLogin(CallbackInfo ci) {
+		if (profiles$pending == null || profiles$chosen != null) {
+			return;
+		}
+		loginTimer = 0;
+		long now = System.nanoTime();
+		if (!profiles$greeted && now - profiles$sentAt > PROFILES$MOD_ANSWER_NANOS) {
 			Profiles.LOGGER.info("Disconnecting {}: the BETA LARP mod did not answer.", profiles$account);
 			kickUser("This server needs the BETA LARP mod. Install the server's modpack and try again.");
+		} else if (now - profiles$lastActivity > PROFILES$IDLE_NANOS) {
+			Profiles.LOGGER.info("Disconnecting {}: idle in the character picker for too long.", profiles$account);
+			kickUser("You were idle in the character picker for too long. Reconnect to try again.");
 		}
 	}
 
@@ -130,10 +161,14 @@ public abstract class PacketHandlerLoginMixin {
 			return;
 		}
 		if (Protocol.HELLO.equals(packet.channel)) {
+			// Also sent every few seconds as a keep-alive, so the connection is not dropped for being silent.
+			if (!profiles$greeted) {
+				Profiles.LOGGER.info("The BETA LARP mod on {}'s client answered.", profiles$account);
+			}
 			profiles$greeted = true;
-			Profiles.LOGGER.info("The BETA LARP mod on {}'s client answered.", profiles$account);
 			return;
 		}
+		profiles$lastActivity = System.nanoTime();
 		try {
 			CharacterService.Outcome outcome = profiles$service().handle(profiles$account, packet.channel, packet.data);
 			for (CharacterService.Reply reply : outcome.replies) {

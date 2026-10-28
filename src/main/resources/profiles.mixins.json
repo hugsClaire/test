@@ -16,6 +16,8 @@
     "PacketHandlerLoginMixin",
     "PacketHandlerServerMixin",
     "PlayerListAccessor",
-    "PlayerListMixin"
+    "PlayerListMixin",
+    "UuidLookupMixin",
+    "CommandUnbanMixin"
   ]
 }

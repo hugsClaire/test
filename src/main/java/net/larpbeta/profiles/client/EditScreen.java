@@ -35,6 +35,8 @@ public class EditScreen extends Screen {
 	private boolean busy;
 	private String error = "";
 	private volatile String pickedPath;
+	private volatile String pickedProblem;
+	private volatile boolean browsing;
 
 	public EditScreen(Protocol.SlotList list, Protocol.SlotInfo slot) {
 		this.list = list;
@@ -125,7 +127,11 @@ public class EditScreen extends Screen {
 				mc.displayScreen(new PickerScreen(list));
 				break;
 			case ID_BROWSE:
-				SkinFiles.browse(path -> pickedPath = path);
+				if (!browsing) {
+					browsing = true;
+					error = "";
+					SkinFiles.browse(path -> pickedPath = path, problem -> pickedProblem = problem, () -> browsing = false);
+				}
 				break;
 			case ID_MODEL:
 				slim = !slim;
@@ -227,6 +233,11 @@ public class EditScreen extends Screen {
 		ClientState.tickConnection();
 		nameField.updateCursorCounter();
 		skinField.updateCursorCounter();
+		String problem = pickedProblem;
+		if (problem != null) {
+			pickedProblem = null;
+			error = problem;
+		}
 		String path = pickedPath;
 		if (path != null) {
 			pickedPath = null;
@@ -245,12 +256,12 @@ public class EditScreen extends Screen {
 		int top = Math.max(30, height / 2 - 85);
 		drawStringCenteredShadow(fontRenderer, slot == null ? "New character" : "Edit " + slot.name, cx, top - 18, 0xFFFFFF);
 		drawStringShadow(fontRenderer, "Name", cx - 100, top + 3, 0xA0A0A0);
-		drawStringShadow(fontRenderer, "Skin: a 64x64 PNG from your computer", cx - 100, top + 43, 0xA0A0A0);
+		drawStringShadow(fontRenderer, "Skin: a 64x64 or 64x32 PNG from your computer", cx - 100, top + 43, 0xA0A0A0);
 		nameField.drawTextBox();
 		skinField.drawTextBox();
-		String text = busy ? "Working..." : error;
+		String text = busy ? "Working..." : browsing ? "Pick your file in the window that opened (it may be behind the game)." : error;
 		if (text != null && !text.isEmpty()) {
-			drawStringCenteredShadow(fontRenderer, text, cx, top + 180, busy ? 0xFFFFFF : 0xFF5555);
+			drawStringCenteredShadow(fontRenderer, text, cx, top + 180, busy || browsing ? 0xFFFFFF : 0xFF5555);
 		}
 		super.render(mouseX, mouseY, partialTick);
 	}
