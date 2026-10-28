@@ -6,9 +6,16 @@
     "defaultRequire": 1
   },
   "mixins": [],
-  "client": [],
+  "client": [
+    "ClientPacketHandlerMixin",
+    "ScreenConnectingMixin",
+    "SkinLookupMixin",
+    "SkinDownloadMixin"
+  ],
   "server": [
     "PacketHandlerLoginMixin",
+    "PacketHandlerServerMixin",
+    "PlayerListAccessor",
     "PlayerListMixin"
   ]
 }

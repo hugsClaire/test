@@ -17,14 +17,21 @@ public class Profiles implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	private static ProfileRegistry registry;
+	private static SkinStore skinStore;
 
 	/** The server-side record of which character slots each account owns. Null if it failed to load. */
 	public static ProfileRegistry registry() {
 		return registry;
 	}
 
+	/** The server's stored skins. */
+	public static SkinStore skinStore() {
+		return skinStore;
+	}
+
 	@Override
 	public void onInitialize() {
+		skinStore = new SkinStore(FabricLoader.getInstance().getConfigDir().resolve("profiles").resolve("skins"));
 		Path file = FabricLoader.getInstance().getConfigDir().resolve("profiles").resolve("slots.tsv");
 		ProfileRegistry loaded = new ProfileRegistry(file, message -> LOGGER.warn("{}", message));
 		try {
