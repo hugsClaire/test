@@ -192,7 +192,7 @@ public final class Protocol {
 		boolean ok = in.readBoolean();
 		int maxSlots = in.readInt();
 		int count = in.readInt();
-		if (count < 0 || count > 64) {
+		if (count < 0 || count > 500) {
 			throw new IOException("bad slot count");
 		}
 		List<SlotInfo> slots = new ArrayList<>();

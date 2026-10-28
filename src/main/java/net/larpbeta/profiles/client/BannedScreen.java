@@ -45,12 +45,22 @@ public class BannedScreen extends Screen {
 		renderBackground();
 		drawStringCenteredShadow(fontRenderer, "Banned characters", width / 2, 12, 0xFFFFFF);
 		drawStringCenteredShadow(fontRenderer, "These cannot be played, edited or deleted. Ask the server owner about an unban.", width / 2, 25, 0xA0A0A0);
-		int y = 46;
+		java.util.List<String> names = new java.util.ArrayList<>();
 		for (Protocol.SlotInfo slot : list.slots) {
 			if (slot.banned) {
-				drawStringCenteredShadow(fontRenderer, slot.name, width / 2, y, 0xFF5555);
-				y += 14;
+				names.add(slot.name);
 			}
+		}
+		int y = 46;
+		int rows = Math.max(2, (height - 24 - 8 - y) / 14); // what fits above the Back button
+		boolean clipped = names.size() > rows;
+		int shown = clipped ? rows - 1 : names.size();
+		for (int i = 0; i < shown; i++) {
+			drawStringCenteredShadow(fontRenderer, names.get(i), width / 2, y, 0xFF5555);
+			y += 14;
+		}
+		if (clipped) {
+			drawStringCenteredShadow(fontRenderer, "...and " + (names.size() - shown) + " more", width / 2, y, 0xA0A0A0);
 		}
 		super.render(mouseX, mouseY, partialTick);
 	}

@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
  */
 public final class ProfileRegistry {
 	public static final int MAX_NAME_LENGTH = 16;
-	/** How many characters one account may own. */
+	/** How many characters (not counting banned ones) one account may own. */
 	public static final int MAX_SLOTS_PER_ACCOUNT = 8;
 	private static final Pattern NAME_PATTERN = Pattern.compile("[A-Za-z0-9_]{1," + MAX_NAME_LENGTH + "}");
 

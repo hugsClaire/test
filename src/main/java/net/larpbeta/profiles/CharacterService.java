@@ -115,8 +115,10 @@ public final class CharacterService {
 	}
 
 	private String create(UUID account, Protocol.Create request) throws Rejected {
-		if (registry.getSlots(account).size() >= ProfileRegistry.MAX_SLOTS_PER_ACCOUNT) {
-			throw new Rejected("You already have the maximum of " + ProfileRegistry.MAX_SLOTS_PER_ACCOUNT + " characters.");
+		// Banned characters do not count: being banned many times must never lock someone out of playing.
+		long playable = registry.getSlots(account).stream().filter(slot -> !isBanned.test(slot.id)).count();
+		if (playable >= ProfileRegistry.MAX_SLOTS_PER_ACCOUNT) {
+			throw new Rejected("You already have the maximum of " + ProfileRegistry.MAX_SLOTS_PER_ACCOUNT + " characters (banned ones do not count).");
 		}
 		if (!ProfileRegistry.isValidName(request.name)) {
 			throw new Rejected("Names are 1 to " + ProfileRegistry.MAX_NAME_LENGTH + " letters, numbers or underscores.");
