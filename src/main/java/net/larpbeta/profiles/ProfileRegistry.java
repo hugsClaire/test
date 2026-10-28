@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
  */
 public final class ProfileRegistry {
 	public static final int MAX_NAME_LENGTH = 16;
+	/** How many characters one account may own. */
+	public static final int MAX_SLOTS_PER_ACCOUNT = 8;
 	private static final Pattern NAME_PATTERN = Pattern.compile("[A-Za-z0-9_]{1," + MAX_NAME_LENGTH + "}");
 
 	public static final class Slot {
@@ -163,6 +165,89 @@ public final class ProfileRegistry {
 			throw new UncheckedIOException("Could not save " + file, e);
 		}
 		return slot;
+	}
+
+	/** One of the account's own slots by id, or null. */
+	public synchronized Slot findSlotById(UUID account, UUID slotId) {
+		List<Slot> slots = slotsByAccount.get(account);
+		if (slots == null || slotId == null) {
+			return null;
+		}
+		for (Slot slot : slots) {
+			if (slot.id.equals(slotId)) {
+				return slot;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Gives one of the account's slots a new name. The slot keeps its UUID, so its save data stays with it.
+	 *
+	 * @throws IllegalArgumentException if the slot is not the account's, or the name is invalid or used by another slot
+	 * @throws UncheckedIOException     if the file could not be written (nothing is changed in that case)
+	 */
+	public synchronized Slot renameSlot(UUID account, UUID slotId, String newName) {
+		Slot old = findSlotById(account, slotId);
+		if (old == null) {
+			throw new IllegalArgumentException("Not your character");
+		}
+		if (!isValidName(newName)) {
+			throw new IllegalArgumentException("Invalid slot name: " + newName);
+		}
+		String oldKey = old.name.toLowerCase(Locale.ROOT);
+		String newKey = newName.toLowerCase(Locale.ROOT);
+		if (!oldKey.equals(newKey) && usedNames.contains(newKey)) {
+			throw new IllegalArgumentException("Slot name already taken: " + newName);
+		}
+		List<Slot> slots = slotsByAccount.get(account);
+		int index = slots.indexOf(old);
+		Slot renamed = new Slot(old.id, newName);
+		slots.set(index, renamed);
+		usedNames.remove(oldKey);
+		usedNames.add(newKey);
+		try {
+			save();
+		} catch (IOException e) {
+			slots.set(index, old);
+			usedNames.remove(newKey);
+			usedNames.add(oldKey);
+			throw new UncheckedIOException("Could not save " + file, e);
+		}
+		return renamed;
+	}
+
+	/**
+	 * Removes a slot from the account. (The world's saved player data for it is left on disk.)
+	 *
+	 * @throws IllegalArgumentException if the slot is not the account's
+	 * @throws UncheckedIOException     if the file could not be written (nothing is changed in that case)
+	 */
+	public synchronized void deleteSlot(UUID account, UUID slotId) {
+		Slot slot = findSlotById(account, slotId);
+		if (slot == null) {
+			throw new IllegalArgumentException("Not your character");
+		}
+		List<Slot> slots = slotsByAccount.get(account);
+		int index = slots.indexOf(slot);
+		slots.remove(index);
+		String key = slot.name.toLowerCase(Locale.ROOT);
+		usedNames.remove(key);
+		usedIds.remove(slot.id);
+		accountBySlot.remove(slot.id);
+		boolean removedAccount = slots.isEmpty();
+		if (removedAccount) {
+			slotsByAccount.remove(account);
+		}
+		try {
+			save();
+		} catch (IOException e) {
+			slotsByAccount.computeIfAbsent(account, k -> new ArrayList<>()).add(index, slot);
+			usedNames.add(key);
+			usedIds.add(slot.id);
+			accountBySlot.put(slot.id, account);
+			throw new UncheckedIOException("Could not save " + file, e);
+		}
 	}
 
 	/** All slots an account owns: the active one first, the rest in the order they were created. */
