@@ -71,7 +71,7 @@ public class PickerScreen extends Screen {
 			buttons.add(edit);
 		}
 		ButtonElement create = new ButtonElement(ID_NEW, cx - 100, height - 48, 98, 20, "New character");
-		create.enabled = !busy && list.slots.size() < list.maxSlots;
+		create.enabled = !busy && playable.size() < list.maxSlots;
 		buttons.add(create);
 		ButtonElement banned = new ButtonElement(ID_BANNED, cx + 2, height - 48, 98, 20, "Banned (" + bannedCount + ")");
 		banned.enabled = !busy && bannedCount > 0;
