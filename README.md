@@ -5,9 +5,9 @@ A mod for [Better Than Adventure](https://www.betterthanadventure.net/) (BTA) 8.
 ## What it does
 
 - Players still log in with their real Minecraft accounts. BTA checks the account itself (keep `online-mode=true` in `server.properties`).
-- After connecting, the player sees a **character picker** before entering the world. They can pick a character, create one, edit one (rename it, change its skin or arm model) or delete one. Banned characters are greyed out and cannot be picked, edited or deleted. Up to 8 characters per account.
+- After connecting, the player sees a **character picker** before entering the world. They can pick a character, create one, edit one (rename it, change its skin or arm model) or delete one. Banned characters are greyed out and cannot be picked or edited; their Edit button is a Delete button instead. Up to 8 characters per account.
 - When a character is picked, the server swaps the account's name and UUID for the character's right before it creates the player. Everything after that (saved inventory and position, chat, the join message, what other players see) uses the character. A brand-new character starts like a first join.
-- **Skins** are per character. The player picks a 64x64 PNG on their own computer; it is checked, stored on the server (`config/profiles/skins`) and sent to other players' clients. The game's usual skin lookup (which asks Mojang by player *name*) is switched off on BETA LARP servers, so a character never borrows the skin of a real account with the same name, and character names are never sent to Mojang.
+- **Skins** are per character. The player picks a 64x64 (or legacy 64x32) PNG on their own computer, using the system file chooser; it is checked, stored on the server (`config/profiles/skins`) and sent to other players' clients. The game's usual skin lookup (which asks Mojang by player *name*) is switched off on BETA LARP servers, so a character never borrows the skin of a real account with the same name, and character names are never sent to Mojang.
 - `/character list`, `/character new <name>` and `/character switch <name>` still work in game as a fallback. They save and disconnect you; rejoin and you are the new character.
 
 ## Install

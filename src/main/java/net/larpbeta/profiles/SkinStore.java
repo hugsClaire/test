@@ -29,7 +29,7 @@ public final class SkinStore {
 	}
 
 	/**
-	 * Checks that bytes are a 64x64 picture and re-encodes them as a fresh PNG, so nothing else
+	 * Checks that bytes are a 64x64 (modern) or 64x32 (legacy) picture and re-encodes them as a fresh PNG, so nothing else
 	 * (extra data, odd formats) is ever stored or sent on to other players.
 	 */
 	public static byte[] sanitize(byte[] raw) throws BadSkinException {
@@ -45,10 +45,10 @@ public final class SkinStore {
 		if (image == null) {
 			throw new BadSkinException("That file is not a PNG picture.");
 		}
-		if (image.getWidth() != 64 || image.getHeight() != 64) {
-			throw new BadSkinException("Skins must be 64x64 pixels (this one is " + image.getWidth() + "x" + image.getHeight() + ").");
+		if (image.getWidth() != 64 || (image.getHeight() != 64 && image.getHeight() != 32)) {
+			throw new BadSkinException("Skins must be 64x64 or 64x32 pixels (this one is " + image.getWidth() + "x" + image.getHeight() + ").");
 		}
-		BufferedImage clean = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage clean = new BufferedImage(64, image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		clean.getGraphics().drawImage(image, 0, 0, null);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {

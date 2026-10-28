@@ -118,11 +118,21 @@ public final class ClientState {
 		return skins.get(id);
 	}
 
-	/** Gives the connection a chance to read incoming packets while a picker screen has replaced the "Connecting" screen. */
+	private static int keepAliveCounter;
+
+	/**
+	 * Gives the connection a chance to read incoming packets while a picker screen has replaced the
+	 * "Connecting" screen. Also tells the server every few seconds that we are still here: BTA drops a
+	 * connection that stays completely silent.
+	 */
 	static void tickConnection() {
 		PacketHandlerClient h = handler;
 		if (h != null) {
 			h.tick();
+			if (++keepAliveCounter >= 100) { // about every 5 seconds
+				keepAliveCounter = 0;
+				send(Protocol.HELLO, new byte[0]);
+			}
 		}
 	}
 }

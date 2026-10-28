@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Shown right after connecting, while the server holds the login: pick which character to play,
- * or create / edit one. Banned characters are greyed out and cannot be picked or edited.
+ * or create / edit one. Banned characters are greyed out and cannot be picked or edited, only deleted.
  */
 public class PickerScreen extends Screen {
 	private static final int ID_NEW = 1;
@@ -21,6 +21,8 @@ public class PickerScreen extends Screen {
 
 	private Protocol.SlotList list;
 	private boolean busy;
+	/** The banned character whose Delete button was clicked once and now asks "Sure?". */
+	private java.util.UUID confirmDelete;
 	private String busyText = "";
 
 	public PickerScreen(Protocol.SlotList list) {
@@ -31,6 +33,7 @@ public class PickerScreen extends Screen {
 	public void update(Protocol.SlotList newList) {
 		this.list = newList;
 		this.busy = false;
+		this.confirmDelete = null;
 		init();
 	}
 
@@ -49,9 +52,11 @@ public class PickerScreen extends Screen {
 			ButtonElement select = new ButtonElement(ID_SELECT + i, cx - 100, y, 150, buttonHeight, slot.banned ? slot.name + " (banned)" : slot.name);
 			select.enabled = !slot.banned && !busy;
 			buttons.add(select);
-			ButtonElement edit = new ButtonElement(ID_EDIT + i, cx + 54, y, 46, buttonHeight, "Edit");
-			edit.enabled = !slot.banned && !busy;
-			buttons.add(edit);
+			// A banned character cannot be edited, only deleted.
+			String sideLabel = !slot.banned ? "Edit" : slot.id.equals(confirmDelete) ? "Sure?" : "Delete";
+			ButtonElement side = new ButtonElement(ID_EDIT + i, cx + 54, y, 46, buttonHeight, sideLabel);
+			side.enabled = !busy;
+			buttons.add(side);
 		}
 		ButtonElement create = new ButtonElement(ID_NEW, cx - 100, height - 24, 98, 20, "New character");
 		create.enabled = !busy && slots.size() < list.maxSlots;
@@ -69,7 +74,19 @@ public class PickerScreen extends Screen {
 		} else if (button.id == ID_NEW) {
 			mc.displayScreen(new EditScreen(list, null));
 		} else if (button.id >= ID_EDIT && button.id < ID_EDIT + 100) {
-			mc.displayScreen(new EditScreen(list, list.slots.get(button.id - ID_EDIT)));
+			Protocol.SlotInfo slot = list.slots.get(button.id - ID_EDIT);
+			if (!slot.banned) {
+				mc.displayScreen(new EditScreen(list, slot));
+			} else if (!slot.id.equals(confirmDelete)) {
+				confirmDelete = slot.id; // first click: ask again
+				init();
+			} else {
+				confirmDelete = null;
+				busy = true;
+				busyText = "Deleting " + slot.name + "...";
+				ClientState.send(Protocol.DELETE, Protocol.encodeId(slot.id));
+				init();
+			}
 		} else if (button.id >= ID_SELECT && button.id < ID_SELECT + 100) {
 			Protocol.SlotInfo slot = list.slots.get(button.id - ID_SELECT);
 			ClientState.selected = slot.id;
