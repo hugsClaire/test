@@ -28,3 +28,7 @@ A mod for [Better Than Adventure](https://www.betterthanadventure.net/) (BTA) 8.
 JDK 17 compiles the mod and Gradle itself runs on JDK 21. Run `gradlew build` (`./gradlew build` on Mac or Linux); the jar ends up in `build/libs`.
 
 Built from the BTA example mod template by Turnip Labs.
+
+## Better With Discord
+
+If the Better With Discord mod is on the server, BETA LARP sends character death messages to Discord itself (that mod's own death hook did not deliver them). Messages use the character's name. The Discord mod is not modified, and nothing happens if it is not installed. The server log shows a "Sending death message to Discord" line for each death.
