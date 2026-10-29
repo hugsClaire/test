@@ -65,6 +65,13 @@ public abstract class PacketHandlerLoginMixin {
 	@Shadow(remap = false)
 	private int loginTimer;
 
+	/**
+	 * The name BTA prints in its own log lines for this connection ("... logged in", "... lost connection").
+	 * BTA sets it to the real account name; we replace it so the account name never reaches the log.
+	 */
+	@Shadow(remap = false)
+	private String username;
+
 	/** How long a client may take to answer the character list at all, i.e. to show it has the mod. */
 	@Unique
 	private static final long PROFILES$MOD_ANSWER_NANOS = 20_000_000_000L;
@@ -105,7 +112,8 @@ public abstract class PacketHandlerLoginMixin {
 		try {
 			if (profiles$chosen != null) {
 				// Second pass: the player picked. Become the character.
-				Profiles.LOGGER.info("Account {} ({}) is joining as character {}", loginPacket.username, loginPacket.uuid, profiles$chosen);
+				Profiles.LOGGER.info("A player (account {}) is joining as character {}", loginPacket.uuid, profiles$chosen);
+				username = profiles$chosen.name;
 				loginPacket.username = profiles$chosen.name;
 				loginPacket.uuid = profiles$chosen.id;
 				return;
@@ -120,12 +128,13 @@ public abstract class PacketHandlerLoginMixin {
 			profiles$sentAt = System.nanoTime();
 			profiles$lastActivity = profiles$sentAt;
 			profiles$account = loginPacket.uuid;
+			username = null; // BTA's log lines then show only the address, not the account name
 			profiles$send(service.slotList(profiles$account, "", true));
-			Profiles.LOGGER.info("Sent the character list to {}; waiting for the client's mod to answer.", loginPacket.username);
+			Profiles.LOGGER.info("Sent the character list to a connecting player; waiting for the client's mod to answer.");
 			ci.cancel();
 		} catch (Exception e) {
 			// Fail closed: never let someone in under their real account name.
-			Profiles.LOGGER.error("Could not set up the character picker for {}; disconnecting them.", loginPacket.username, e);
+			Profiles.LOGGER.error("Could not set up the character picker; disconnecting the player.", e);
 			kickUser("Profile error - please tell the server owner.");
 			ci.cancel();
 		}
