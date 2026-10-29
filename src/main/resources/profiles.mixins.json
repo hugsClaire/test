@@ -19,6 +19,6 @@
     "PlayerListMixin",
     "UuidLookupMixin",
     "CommandUnbanMixin",
-    "DeathDiagnosticsMixin"
+    "DiscordDeathRelayMixin"
   ]
 }
